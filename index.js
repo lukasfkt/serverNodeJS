@@ -46,9 +46,9 @@ app.post("/sendData", function (req, res) {
     'medDate': req.body.medDate,
     'time': data,
   }).then(function (result) {
-    res.send("Administrador cadastrado com sucessso")
+    res.send("Dado inserido com sucesso")
   }).catch(function (err) {
-    res.send("Erro na cadastro do Administrador" + err)
+    res.send("Erro no cadastro do dado" + err)
   })
 
 })
