@@ -1,20 +1,23 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('medicoes', {
+    await queryInterface.createTable('UserConfigs', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      type: {
-        type: Sequelize.STRING
+      gasCozinha: {
+        type: Sequelize.FLOAT
       },
-      time: {
-        type: Sequelize.DATE
+      fluxoAgua: {
+        type: Sequelize.FLOAT
       },
-      medData: {
+      fumaca: {
+        type: Sequelize.FLOAT
+      },
+      temperatura: {
         type: Sequelize.FLOAT
       },
       userId: {
@@ -31,6 +34,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('medicoes');
+    await queryInterface.dropTable('UserConfigs');
   }
 };
