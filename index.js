@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require("sequelize");
 const database = require('./models');
+const { json } = require('express');
 
 const app = express();
 
@@ -38,6 +39,8 @@ app.use(bodyParser.json());
 
 const port = 8080;
 
+//========================================= TESTS =========================================
+
 app.get('/test', (req, res) => res
   .status(200)
   .send({
@@ -67,9 +70,33 @@ app.get('/time', function (req, res) {
   res.status(200).send(data);
 })
 
+//========================================= GET MEDITIONS =========================================
+
 app.get('/all', async function (req, res) {
   const result = await database.medicoes.findAll()
   res.status(200).send(result);
+})
+
+app.get('/allTemp', async function (req, res) {
+  var data = new Date();
+  var meditionsToSend = [];
+  var timesToSend = [];
+  data.setHours(data.getHours() - 1)
+  const { Op } = require("sequelize");
+  const result = await database.medicoes.findAll({
+    where: {
+      type: {
+        [Op.gte]: "temperatura"
+      }
+    }
+  })
+  result.forEach(element => {
+    meditionsToSend.push(element.medData);
+    d = new Date(element.time)
+    var datestring = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    timesToSend.push(datestring);
+  });
+  res.status(200).json({ data: meditionsToSend, time: timesToSend });
 })
 
 app.get('/lastHour', async function (req, res) {
@@ -86,6 +113,33 @@ app.get('/lastHour', async function (req, res) {
   res.status(200).send(result);
 })
 
+app.get('/getLastTemp', async function (req, res) {
+  var data = new Date();
+  var meditionsToSend = [];
+  var timesToSend = [];
+  data.setHours(data.getHours() - 1)
+  const { Op } = require("sequelize");
+  const result = await database.medicoes.findAll({
+    where: {
+      time: {
+        [Op.gte]: data,
+      },
+      type: {
+        [Op.gte]: "temperatura"
+      }
+    }
+  })
+  result.forEach(element => {
+    meditionsToSend.push(element.medData);
+    d = new Date(element.time)
+    var datestring = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    timesToSend.push(datestring);
+  });
+  res.status(200).json({ data: meditionsToSend, time: timesToSend });
+})
+
+//========================================= WRITE MEDITIONS =========================================
+
 app.post("/sendData", function (req, res) {
   var date = new Date();
   const add = database.medicoes.create({
@@ -99,6 +153,10 @@ app.post("/sendData", function (req, res) {
     res.send("Erro no cadastro do dado" + err)
   })
 })
+
+
+//========================================= CONFIG =========================================
+
 
 app.post("/createDefaultConfig", function (req, res) {
   const add = database.UserConfig.create({
