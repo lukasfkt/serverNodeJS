@@ -166,7 +166,7 @@ app.get("/getUserConfig", async function (req, res) {
       },
     }
   })
-  res.status(200).send(result);
+  res.status(200).send(result[0]);
 })
 
 app.post("/createDefaultConfig", function (req, res) {
