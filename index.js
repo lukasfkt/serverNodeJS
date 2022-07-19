@@ -93,7 +93,7 @@ app.get('/allTemp', async function (req, res) {
   result.forEach(element => {
     meditionsToSend.push(element.medData);
     d = new Date(element.time)
-    var datestring = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    var datestring = (("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
     timesToSend.push(datestring);
   });
   res.status(200).json({ data: meditionsToSend, time: timesToSend });
@@ -157,6 +157,17 @@ app.post("/sendData", function (req, res) {
 
 //========================================= CONFIG =========================================
 
+app.get("/getUserConfig", async function (req, res) {
+  const { Op } = require("sequelize");
+  const result = await database.UserConfig.findAll({
+    where: {
+      userId: {
+        [Op.gte]: req.query.userId,
+      },
+    }
+  })
+  res.status(200).send(result);
+})
 
 app.post("/createDefaultConfig", function (req, res) {
   const add = database.UserConfig.create({
