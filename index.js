@@ -77,46 +77,49 @@ app.get('/all', async function (req, res) {
   res.status(200).send(result);
 })
 
-app.get('/allTemp', async function (req, res) {
+app.get('/allLastHour', async function (req, res) {
   var data = new Date();
-  var meditionsToSend = [];
-  var timesToSend = [];
-  data.setHours(data.getHours() - 1)
+  var temp = [], agua = [], gas = [], fumaca = [];
+  var timeTemp = [], timeAgua = [], timeGas = [], timeFumaca = [];
   const { Op } = require("sequelize");
   const result = await database.medicoes.findAll({
     where: {
-      type: {
-        [Op.gte]: "temperatura"
-      }
+      userId: {
+        [Op.gte]: req.query.userId,
+      },
     }
   })
   result.forEach(element => {
-    meditionsToSend.push(element.medData);
     d = new Date(element.time)
     var datestring = (("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
-    timesToSend.push(datestring);
-  });
-  res.status(200).json({ data: meditionsToSend, time: timesToSend });
-})
-
-app.get('/lastHour', async function (req, res) {
-  var data = new Date();
-  data.setHours(data.getHours() - 1)
-  const { Op } = require("sequelize");
-  const result = await database.medicoes.findAll({
-    where: {
-      time: {
-        [Op.gte]: data,
-      }
+    switch (element.type) {
+      case "temperatura":
+        temp.push(element.medData);
+        timeTemp.push(datestring)
+        break;
+      case "agua":
+        agua.push(element.medData);
+        timeAgua.push(datestring)
+        break;
+      case "gas":
+        gas.push(element.medData);
+        timeGas.push(datestring)
+        break;
+      case "fumaca":
+        fumaca.push(element.medData);
+        timeFumaca.push(datestring)
+        break;
     }
-  })
-  res.status(200).send(result);
+  });
+  res.status(200).json({ temp: temp, timeTemp: timeTemp, agua: agua, timeAgua: timeAgua, gas: gas, timeGas: timeGas, fumaca: fumaca, timeFumaca: timeFumaca });
 })
 
-app.get('/getLastTemp', async function (req, res) {
+
+// SENSOR GAS, TEMPERATURA, FUMACA E FLUXO DE AGUA
+app.get('/getLastMed', async function (req, res) {
   var data = new Date();
-  var meditionsToSend = [];
-  var timesToSend = [];
+  var temp = [], agua = [], gas = [], fumaca = [];
+  var timeTemp = [], timeAgua = [], timeGas = [], timeFumaca = [];
   data.setHours(data.getHours() - 1)
   const { Op } = require("sequelize");
   const result = await database.medicoes.findAll({
@@ -124,25 +127,45 @@ app.get('/getLastTemp', async function (req, res) {
       time: {
         [Op.gte]: data,
       },
-      type: {
-        [Op.gte]: "temperatura"
-      }
+      userId: {
+        [Op.gte]: req.query.userId,
+      },
     }
   })
   result.forEach(element => {
-    meditionsToSend.push(element.medData);
     d = new Date(element.time)
-    var datestring = ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
-    timesToSend.push(datestring);
+    var datestring = (("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
+    switch (element.type) {
+      case "temperatura":
+        temp.push(element.medData);
+        timeTemp.push(datestring)
+        break;
+      case "agua":
+        agua.push(element.medData);
+        timeAgua.push(datestring)
+        break;
+      case "gas":
+        gas.push(element.medData);
+        timeGas.push(datestring)
+        break;
+      case "fumaca":
+        fumaca.push(element.medData);
+        timeFumaca.push(datestring)
+        break;
+    }
   });
-  res.status(200).json({ data: meditionsToSend, time: timesToSend });
+  res.status(200).json({ temp: temp, timeTemp: timeTemp, agua: agua, timeAgua: timeAgua, gas: gas, timeGas: timeGas, fumaca: fumaca, timeFumaca: timeFumaca });
 })
 
 //========================================= WRITE MEDITIONS =========================================
 
 app.post("/sendData", function (req, res) {
   var date = new Date();
-  const add = database.medicoes.create({
+  if (req.body.type != "fumaca" && req.body.type != "temperatura" && req.body.type != "agua" && req.body.type != "gas") {
+    res.status(410).header("Error no cadastro").send("Erro no cadastro do dado")
+    return;
+  }
+  database.medicoes.create({
     'type': req.body.type,
     'medData': req.body.medData,
     'time': date,
