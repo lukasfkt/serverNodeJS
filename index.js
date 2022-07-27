@@ -206,7 +206,7 @@ app.post("/createDefaultConfig", function (req, res) {
   })
 })
 
-app.patch("/updateUserConfig", function (req, res) {
+app.put("/updateUserConfig", function (req, res) {
   const add = database.UserConfig.update({
     'gasCozinha': req.body.gasCozinha,
     'fluxoAgua': req.body.fluxoAgua,
