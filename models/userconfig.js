@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     fluxoAgua: DataTypes.FLOAT,
     fumaca: DataTypes.FLOAT,
     temperatura: DataTypes.FLOAT,
+    active: DataTypes.BOOLEAN,
     userId: DataTypes.INTEGER
   }, {
     sequelize,

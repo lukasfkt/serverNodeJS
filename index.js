@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const sequelize = require("sequelize");
 const database = require('./models');
 const { json } = require('express');
+//import { admin } from './send.js'
+const { admin } = require('./send')
 
 const app = express();
 
@@ -35,6 +37,18 @@ Wt+RAoGBAKo3EBGWihYgiTsHJ9aeseX1DQ8tzZ5MJKj5sf3WZ7qWikxPHzFygvTy
 BVVJYqC6t0nxYs0RU6D6CpSKhgyTepAGmgIfRmNOeUgTngmrGR26
 -----END RSA PRIVATE KEY-----`
 
+const notification_options = {
+  priority: "high",
+  timeToLive: 60 * 60 * 24
+};
+
+/* const message_notification = {
+  notification: {
+     title: enter_subject_of_notification_here,
+     body: enter_message_here
+         }
+  }; */
+
 app.use(bodyParser.json());
 
 const port = 8080;
@@ -64,12 +78,6 @@ app.post("/testrsa", function (req, res) {
     );
     res.status(200).send(decodedStringAtoB); */
 })
-
-app.get('/time', function (req, res) {
-  var data = new Date();
-  res.status(200).send(data);
-})
-
 //========================================= GET MEDITIONS =========================================
 
 app.get('/all', async function (req, res) {
@@ -77,37 +85,61 @@ app.get('/all', async function (req, res) {
   res.status(200).send(result);
 })
 
-app.get('/allLastHour', async function (req, res) {
+app.get('/getLastMonthMed', async function (req, res) {
   var data = new Date();
+  data.setDate(0);
   var temp = [], agua = [], gas = [], fumaca = [];
   var timeTemp = [], timeAgua = [], timeGas = [], timeFumaca = [];
   const { Op } = require("sequelize");
   const result = await database.medicoes.findAll({
     where: {
+      time: {
+        [Op.gte]: data,
+      },
       userId: {
-        [Op.gte]: req.query.userId,
+        [Op.eq]: req.query.userId,
       },
     }
   })
   result.forEach(element => {
     d = new Date(element.time)
-    var datestring = (("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
+    var datestring = (d.getDate() + "/" + d.getMonth());
     switch (element.type) {
       case "temperatura":
-        temp.push(element.medData);
-        timeTemp.push(datestring)
+        if (timeTemp.includes(datestring)) {
+          index = timeTemp.findIndex(dataToFind => dataToFind == datestring)
+          temp[index] = (temp[index] + element.medData) / 2
+        } else {
+          temp.push(element.medData);
+          timeTemp.push(datestring)
+        }
         break;
       case "agua":
-        agua.push(element.medData);
-        timeAgua.push(datestring)
+        if (timeAgua.includes(datestring)) {
+          index = timeAgua.findIndex(dataToFind => dataToFind == datestring)
+          agua[index] = (agua[index] + element.medData) / 2
+        } else {
+          agua.push(element.medData);
+          timeAgua.push(datestring)
+        }
         break;
       case "gas":
-        gas.push(element.medData);
-        timeGas.push(datestring)
+        if (timeGas.includes(datestring)) {
+          index = timeGas.findIndex(dataToFind => dataToFind == datestring)
+          gas[index] = (gas[index] + element.medData) / 2
+        } else {
+          gas.push(element.medData);
+          timeGas.push(datestring)
+        }
         break;
       case "fumaca":
-        fumaca.push(element.medData);
-        timeFumaca.push(datestring)
+        if (timeFumaca.includes(datestring)) {
+          index = timeFumaca.findIndex(dataToFind => dataToFind == datestring)
+          fumaca[index] = (fumaca[index] + element.medData) / 2
+        } else {
+          fumaca.push(element.medData);
+          timeFumaca.push(datestring)
+        }
         break;
     }
   });
@@ -116,7 +148,7 @@ app.get('/allLastHour', async function (req, res) {
 
 
 // SENSOR GAS, TEMPERATURA, FUMACA E FLUXO DE AGUA
-app.get('/getLastMed', async function (req, res) {
+app.get('/getLastHourMed', async function (req, res) {
   var data = new Date();
   var temp = [], agua = [], gas = [], fumaca = [];
   var timeTemp = [], timeAgua = [], timeGas = [], timeFumaca = [];
@@ -128,7 +160,7 @@ app.get('/getLastMed', async function (req, res) {
         [Op.gte]: data,
       },
       userId: {
-        [Op.gte]: req.query.userId,
+        [Op.eq]: req.query.userId,
       },
     }
   })
@@ -185,7 +217,7 @@ app.get("/getUserConfig", async function (req, res) {
   const result = await database.UserConfig.findAll({
     where: {
       userId: {
-        [Op.gte]: req.query.userId,
+        [Op.eq]: req.query.userId,
       },
     }
   })
@@ -198,6 +230,7 @@ app.post("/createDefaultConfig", function (req, res) {
     'fluxoAgua': req.body.fluxoAgua,
     'fumaca': req.body.fumaca,
     'temperatura': req.body.temperatura,
+    'active': false,
     'userId': req.body.userId
   }).then(function (result) {
     res.send("Configuracoes alteradas com sucesso!")
