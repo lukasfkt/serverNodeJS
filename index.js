@@ -103,7 +103,7 @@ app.get('/getLastMonthMed', async function (req, res) {
   })
   result.forEach(element => {
     d = new Date(element.time)
-    var datestring = (d.getDate() + "/" + d.getMonth());
+    var datestring = ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2);
     switch (element.type) {
       case "temperatura":
         if (timeTemp.includes(datestring)) {
@@ -245,6 +245,7 @@ app.put("/updateUserConfig", function (req, res) {
     'fluxoAgua': req.body.fluxoAgua,
     'fumaca': req.body.fumaca,
     'temperatura': req.body.temperatura,
+    'active': req.body.active,
     'userId': req.body.userId
   },
     {
