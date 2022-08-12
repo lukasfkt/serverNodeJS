@@ -14,10 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   UserConfig.init({
-    gasCozinha: DataTypes.FLOAT,
-    fluxoAgua: DataTypes.FLOAT,
-    fumaca: DataTypes.FLOAT,
-    temperatura: DataTypes.FLOAT,
+    gases: DataTypes.FLOAT,
+    water: DataTypes.FLOAT,
+    temp: DataTypes.FLOAT,
     active: DataTypes.BOOLEAN,
     userId: DataTypes.INTEGER
   }, {

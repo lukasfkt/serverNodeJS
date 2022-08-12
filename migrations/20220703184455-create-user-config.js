@@ -8,16 +8,13 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      gasCozinha: {
+      gases: {
         type: Sequelize.FLOAT
       },
-      fluxoAgua: {
+      water: {
         type: Sequelize.FLOAT
       },
-      fumaca: {
-        type: Sequelize.FLOAT
-      },
-      temperatura: {
+      temp: {
         type: Sequelize.FLOAT
       },
       userId: {
