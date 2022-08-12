@@ -137,7 +137,7 @@ app.get('/getLastHourMed', async function (req, res) {
 app.post("/sendData", function (req, res) {
   var date = new Date();
   date.setHours(date.getHours() - 3)
-  if (!req.query.userId || !req.query.type || !req.query.medData) {
+  if (!req.query.userId && !req.query.type && !req.query.medData) {
     res.status(400).header("Payload incomplete").send("Payload incomplete")
     return;
   }
@@ -179,7 +179,7 @@ app.get("/getUserConfig", async function (req, res) {
 })
 
 app.post("/createDefaultConfig", function (req, res) {
-  if (!req.query.gases || !req.query.water || !req.query.temp || !req.query.active || !req.query.userId) {
+  if (!req.query.gases && !req.query.water && !req.query.temp && !req.query.userId) {
     res.status(400).header("Payload incomplete").send("Payload incomplete")
     return;
   }
@@ -199,7 +199,7 @@ app.post("/createDefaultConfig", function (req, res) {
 })
 
 app.put("/updateUserConfig", function (req, res) {
-  if (!req.query.gases || !req.query.water || !req.query.temp || !req.query.active || !req.query.userId) {
+  if (!req.query.gases && !req.query.water && !req.query.temp && !req.query.active && !req.query.userId) {
     res.status(400).header("Payload incomplete").send("Payload incomplete")
     return;
   }
