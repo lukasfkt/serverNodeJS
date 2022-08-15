@@ -35,7 +35,8 @@ app.get('/getLastMonthMed', async function (req, res) {
   data.setDate(0);
   data.setHours(data.getHours() - 3)
   var temp = [], water = [], gases = [];
-  var aux = [];
+  var aux = [[]];
+  aux['temp'] = [], aux['water'] = [], aux['gases'] = []
   var timeTemp = [], timeWater = [], timeGases = [];
   const { Op } = require("sequelize");
   const result = await database.meditions.findAll({
@@ -48,7 +49,7 @@ app.get('/getLastMonthMed', async function (req, res) {
       },
     }
   })
-  result.forEach(element => {
+  result.forEach((element) => {
     d = new Date(element.time)
     var datestring = ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2);
     switch (element.type) {
@@ -56,6 +57,9 @@ app.get('/getLastMonthMed', async function (req, res) {
         if (timeTemp.includes(datestring)) {
           index = timeTemp.findIndex(dataToFind => dataToFind == datestring)
           temp[index] = temp[index] + element.medData
+          if (!['temp'][index]) {
+            aux['temp'][index] = 1;
+          }
           aux['temp'][index] += 1;
         } else {
           temp.push(element.medData);
@@ -66,6 +70,9 @@ app.get('/getLastMonthMed', async function (req, res) {
         if (timeWater.includes(datestring)) {
           index = timeWater.findIndex(dataToFind => dataToFind == datestring)
           water[index] = water[index] + element.medData
+          if (!aux['water'][index]) {
+            aux['water'][index] = 1;
+          }
           aux['water'][index] += 1;
         } else {
           water.push(element.medData);
@@ -76,12 +83,30 @@ app.get('/getLastMonthMed', async function (req, res) {
         if (timeGases.includes(datestring)) {
           index = timeGases.findIndex(dataToFind => dataToFind == datestring)
           gases[index] = gases[index] + element.medData
+          if (!aux['gases'][index]) {
+            aux['gases'][index] = 1;
+          }
           aux['gases'][index] += 1;
         } else {
           gases.push(element.medData);
           timeGases.push(datestring)
         }
         break;
+    }
+  });
+  temp.forEach((element, index) => {
+    if (aux['temp'][index]) {
+      temp[index] = temp[index] / aux['temp'][index]
+    }
+  });
+  water.forEach((element, index) => {
+    if (aux['water'][index]) {
+      water[index] = water[index] / aux['water'][index]
+    }
+  });
+  gases.forEach((element, index) => {
+    if (aux['gases'][index]) {
+      gases[index] = gases[index] / aux['gases'][index]
     }
   });
   res.status(200).json({ temp: temp, timeTemp: timeTemp, water: water, timeWater: timeWater, gases: gases, timeGases: timeGases });
