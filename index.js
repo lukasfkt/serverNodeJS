@@ -49,6 +49,10 @@ app.get('/getLastMonthMed', async function (req, res) {
       },
     }
   })
+  if (result.length == 0) {
+    res.status(406).header("User not found").send("User not found")
+    return;
+  }
   result.forEach((element) => {
     d = new Date(element.time)
     var datestring = ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2);
@@ -135,6 +139,10 @@ app.get('/getLastHourMed', async function (req, res) {
       },
     }
   })
+  if (result.length == 0) {
+    res.status(406).header("User not found").send("User not found")
+    return;
+  }
   result.forEach(element => {
     d = new Date(element.time)
     var datestring = (("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
@@ -199,6 +207,10 @@ app.get("/getUserConfig", async function (req, res) {
       },
     }
   })
+  if (result.length == 0) {
+    res.status(406).header("User not found").send("User not found")
+    return;
+  }
   res.status(200).send(result[0]);
   return;
 })
@@ -223,9 +235,21 @@ app.post("/createDefaultConfig", function (req, res) {
   })
 })
 
-app.put("/updateUserConfig", function (req, res) {
+app.put("/updateUserConfig", async function (req, res) {
   if (!req.body.gases && !req.body.water && !req.body.temp && !req.body.active && !req.body.userId) {
     res.status(400).header("Payload incomplete").send("Payload incomplete")
+    return;
+  }
+  const { Op } = require("sequelize");
+  const result = await database.UserConfig.findAll({
+    where: {
+      userId: {
+        [Op.eq]: req.body.userId,
+      },
+    }
+  })
+  if (result.length == 0) {
+    res.status(406).header("User not found").send("User not found")
     return;
   }
   const add = database.UserConfig.update({
