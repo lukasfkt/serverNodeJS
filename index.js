@@ -168,13 +168,16 @@ app.get('/getLastHourMed', async function (req, res) {
 //========================================= WRITE MEDITIONS =========================================
 
 app.post("/sendData", function (req, res) {
+  var userId = req.body.userId ? req.body.userId : req.query.userId
+  var type = req.body.type ? req.body.type : req.query.type
+  var medData = req.body.medData ? req.body.medData : req.query.medData
   var date = new Date();
   date.setHours(date.getHours() - 3)
-  if (!req.body.userId && !req.body.type && !req.body.medData) {
+  if (!userId || !type || !medData) {
     res.status(400).header("Payload incomplete").send("Payload incomplete")
     return;
   }
-  if (req.body.type != "temp" && req.body.type != "water" && req.body.type != "gases") {
+  if (type != "temp" && type != "water" && type != "gases") {
     res.status(410).header("Registration error").send("Invalid data")
     return;
   }
@@ -216,7 +219,7 @@ app.get("/getUserConfig", async function (req, res) {
 })
 
 app.post("/createDefaultConfig", function (req, res) {
-  if (!req.body.gases && !req.body.water && !req.body.temp && !req.body.userId) {
+  if (!req.body.gases || !req.body.water || !req.body.temp || !req.body.userId) {
     res.status(400).header("Payload incomplete").send("Payload incomplete")
     return;
   }
@@ -236,7 +239,7 @@ app.post("/createDefaultConfig", function (req, res) {
 })
 
 app.put("/updateUserConfig", async function (req, res) {
-  if (!req.body.gases && !req.body.water && !req.body.temp && !req.body.active && !req.body.userId) {
+  if (!req.body.gases || !req.body.water || !req.body.temp || !req.body.active || !req.body.userId) {
     res.status(400).header("Payload incomplete").send("Payload incomplete")
     return;
   }
