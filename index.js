@@ -223,14 +223,16 @@ app.post("/createDefaultConfig", function (req, res) {
 })
 
 app.put("/updateUserConfig", async function (req, res) {
-  if (!req.body.active || !req.body.userId) {
+  var active = req.body.active ? req.body.active : req.query.active;
+  var userId = req.body.userId ? req.body.userId : req.query.userId;
+  if (!active || !userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   const { Op } = require("sequelize");
   const result = await database.UserConfig.findAll({
     where: {
       userId: {
-        [Op.eq]: req.body.userId,
+        [Op.eq]: userId,
       },
     }
   })
@@ -238,11 +240,11 @@ app.put("/updateUserConfig", async function (req, res) {
     return res.status(406).header("User not found").send("User not found");
   }
   const add = database.UserConfig.update({
-    'active': req.body.active,
-    'userId': req.body.userId
+    'active': active,
+    'userId': userId
   },
     {
-      where: { userId: req.body.userId },
+      where: { userId: userId },
     }
   ).then(function (result) {
     return res.status(200).send("Data registered successfully");
