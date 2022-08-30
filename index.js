@@ -15,21 +15,19 @@ const port = 8080;
 app.get("/test", function (req, res) {
   var date = new Date();
   date.setHours(date.getHours() - 3)
-  res.status(200).send(date);
+  return res.status(200).send(date);
 })
 
 //========================================= GET MEDITIONS =========================================
 
 app.get('/all', async function (req, res) {
   const result = await database.meditions.findAll()
-  res.status(200).send(result);
-  return;
+  return res.status(200).send(result);
 })
 
 app.get('/getLastMonthMed', async function (req, res) {
   if (!req.query.userId) {
-    res.status(400).header("Payload incomplete").send("Payload incomplete")
-    return;
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   var data = new Date();
   data.setDate(0);
@@ -50,8 +48,7 @@ app.get('/getLastMonthMed', async function (req, res) {
     }
   })
   if (result.length == 0) {
-    res.status(406).header("User not found").send("User not found")
-    return;
+    return res.status(406).header("User not found").send("User not found");
   }
   result.forEach((element) => {
     d = new Date(element.time)
@@ -113,16 +110,14 @@ app.get('/getLastMonthMed', async function (req, res) {
       gases[index] = gases[index] / aux['gases'][index]
     }
   });
-  res.status(200).json({ temp: temp, timeTemp: timeTemp, water: water, timeWater: timeWater, gases: gases, timeGases: timeGases });
-  return;
+  return res.status(200).json({ temp: temp, timeTemp: timeTemp, water: water, timeWater: timeWater, gases: gases, timeGases: timeGases });
 })
 
 
 // SENSOR GAS, TEMPERATURA, FUMACA E FLUXO DE AGUA
 app.get('/getLastHourMed', async function (req, res) {
   if (!req.query.userId) {
-    res.status(400).header("Payload incomplete").send("Payload incomplete")
-    return;
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   var data = new Date();
   var temp = [], water = [], gases = [];
@@ -140,8 +135,7 @@ app.get('/getLastHourMed', async function (req, res) {
     }
   })
   if (result.length == 0) {
-    res.status(406).header("User not found").send("User not found")
-    return;
+    return res.status(406).header("User not found").send("User not found");
   }
   result.forEach(element => {
     d = new Date(element.time)
@@ -161,8 +155,7 @@ app.get('/getLastHourMed', async function (req, res) {
         break;
     }
   });
-  res.status(200).json({ temp: temp, timeTemp: timeTemp, water: water, timeWater: timeWater, gases: gases, timeGases: timeGases });
-  return;
+  return res.status(200).json({ temp: temp, timeTemp: timeTemp, water: water, timeWater: timeWater, gases: gases, timeGases: timeGases });
 })
 
 //========================================= WRITE MEDITIONS =========================================
@@ -174,12 +167,10 @@ app.post("/sendData", function (req, res) {
   var date = new Date();
   date.setHours(date.getHours() - 3)
   if (!userId || !type || !medData) {
-    res.status(400).header("Payload incomplete").send("Payload incomplete")
-    return;
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   if (type != "temp" && type != "water" && type != "gases") {
-    res.status(410).header("Registration error").send("Invalid data")
-    return;
+    return res.status(410).header("Registration error").send("Invalid data");
   }
   database.meditions.create({
     'type': req.body.type,
@@ -187,11 +178,10 @@ app.post("/sendData", function (req, res) {
     'time': date,
     'userId': req.body.userId,
   }).then(function (result) {
-    res.send("Dado inserido com sucesso")
+    return res.send("Dado inserido com sucesso");
   }).catch(function (err) {
-    res.send("Erro no cadastro do dado" + err)
+    return res.send("Erro no cadastro do dado" + err);
   })
-  return;
 })
 
 
@@ -199,8 +189,7 @@ app.post("/sendData", function (req, res) {
 
 app.get("/getUserConfig", async function (req, res) {
   if (!req.query.userId) {
-    res.status(400).header("Payload incomplete").send("Payload incomplete")
-    return;
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   const { Op } = require("sequelize");
   const result = await database.UserConfig.findAll({
@@ -211,17 +200,14 @@ app.get("/getUserConfig", async function (req, res) {
     }
   })
   if (result.length == 0) {
-    res.status(406).header("User not found").send("User not found")
-    return;
+    return res.status(406).header("User not found").send("User not found");
   }
-  res.status(200).send(result[0]);
-  return;
+  return res.status(200).send(result[0]);
 })
 
 app.post("/createDefaultConfig", function (req, res) {
   if (!req.body.gases || !req.body.water || !req.body.temp || !req.body.userId) {
-    res.status(400).header("Payload incomplete").send("Payload incomplete")
-    return;
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   const add = database.UserConfig.create({
     'gases': req.body.gases,
@@ -230,18 +216,15 @@ app.post("/createDefaultConfig", function (req, res) {
     'active': false,
     'userId': req.body.userId
   }).then(function (result) {
-    res.status(200).send("Data registered successfully")
-    return;
+    return res.status(200).send("Data registered successfully");
   }).catch(function (err) {
-    res.status(410).header("Registration error").send("Invalid data")
-    return;
+    return res.status(410).header("Registration error").send("Invalid data");
   })
 })
 
 app.put("/updateUserConfig", async function (req, res) {
-  if (!req.body.gases || !req.body.water || !req.body.temp || !req.body.active || !req.body.userId) {
-    res.status(400).header("Payload incomplete").send("Payload incomplete")
-    return;
+  if (!req.body.active || !req.body.userId) {
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   const { Op } = require("sequelize");
   const result = await database.UserConfig.findAll({
@@ -252,13 +235,9 @@ app.put("/updateUserConfig", async function (req, res) {
     }
   })
   if (result.length == 0) {
-    res.status(406).header("User not found").send("User not found")
-    return;
+    return res.status(406).header("User not found").send("User not found");
   }
   const add = database.UserConfig.update({
-    'gases': req.body.gases,
-    'water': req.body.water,
-    'temp': req.body.temp,
     'active': req.body.active,
     'userId': req.body.userId
   },
@@ -266,11 +245,9 @@ app.put("/updateUserConfig", async function (req, res) {
       where: { userId: req.body.userId },
     }
   ).then(function (result) {
-    res.status(200).send("Data registered successfully")
-    return;
+    return res.status(200).send("Data registered successfully");
   }).catch(function (err) {
-    res.status(410).header("Registration error").send("Invalid data")
-    return;
+    return res.status(410).header("Registration error").send("Invalid data");
   })
 })
 
