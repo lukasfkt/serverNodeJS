@@ -1,23 +1,23 @@
 {
   "development": {
-    "username": "sql10510662",
-    "password": "TRkaHWqduj",
-    "database": "sql10510662",
-    "host": "sql10.freesqldatabase.com",
+    "username": "admin",
+    "password": "admin123540",
+    "database": "dbSmartHouse",
+    "host": "databasesmarthouse.ccuggcnexhwh.us-east-1.rds.amazonaws.com",
     "dialect": "mysql"
   },
   "test": {
-    "username": "sql10510662",
-    "password": "TRkaHWqduj",
-    "database": "sql10510662",
-    "host": "sql10.freesqldatabase.com",
+    "username": "admin",
+    "password": "admin123540",
+    "database": "dbSmartHouse",
+    "host": "databasesmarthouse.ccuggcnexhwh.us-east-1.rds.amazonaws.com",
     "dialect": "mysql"
   },
   "production": {
-    "username": "sql10510662",
-    "password": "TRkaHWqduj",
-    "database": "sql10510662",
-    "host": "sql10.freesqldatabase.com",
+    "username": "admin",
+    "password": "admin123540",
+    "database": "dbSmartHouse",
+    "host": "databasesmarthouse.ccuggcnexhwh.us-east-1.rds.amazonaws.com",
     "dialect": "mysql"
   }
 }
