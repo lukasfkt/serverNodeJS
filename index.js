@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const sequelize = require("sequelize");
 const database = require('./models');
 const { json } = require('express');
+const db = require('./models');
+const { Op } = require("sequelize");
 
 const app = express();
 
@@ -16,6 +18,14 @@ app.get("/test", function (req, res) {
   var date = new Date();
   date.setHours(date.getHours() - 3)
   return res.status(200).send(date);
+})
+
+app.get("/resetAllData", function (req, res) {
+  db.meditions.destroy({
+    where: {},
+    truncate: true
+  })
+  return res.status(200).send();
 })
 
 //========================================= GET MEDITIONS =========================================
@@ -36,7 +46,6 @@ app.get('/getLastMonthMed', async function (req, res) {
   var aux = [[]];
   aux['temp'] = [], aux['water'] = [], aux['gases'] = []
   var timeTemp = [], timeWater = [], timeGases = [];
-  const { Op } = require("sequelize");
   const result = await database.meditions.findAll({
     where: {
       time: {
@@ -123,7 +132,6 @@ app.get('/getLastHourMed', async function (req, res) {
   var temp = [], water = [], gases = [];
   var timeTemp = [], timeWater = [], timeGases = [];
   data.setHours(data.getHours() - 4)
-  const { Op } = require("sequelize");
   const result = await database.meditions.findAll({
     where: {
       time: {
@@ -164,9 +172,10 @@ app.post("/sendData", function (req, res) {
   var userId = req.body.userId ? req.body.userId : req.query.userId
   var type = req.body.type ? req.body.type : req.query.type
   var medData = req.body.medData ? req.body.medData : req.query.medData
-  var date = new Date();
+  var timestamp = req.body.timestamp ? req.body.timestamp : req.query.timestamp
+  var date = new Date(timestamp * 1000);
   date.setHours(date.getHours() - 3)
-  if (!userId || !type || !medData) {
+  if (!userId || !type || !medData || !timestamp) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
   if (type != "temp" && type != "water" && type != "gases") {
@@ -191,7 +200,6 @@ app.get("/getUserConfig", async function (req, res) {
   if (!req.query.userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
-  const { Op } = require("sequelize");
   const result = await database.UserConfig.findAll({
     where: {
       userId: {
@@ -228,7 +236,6 @@ app.put("/updateUserConfig", async function (req, res) {
   if (!active || !userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
-  const { Op } = require("sequelize");
   const result = await database.UserConfig.findAll({
     where: {
       userId: {
