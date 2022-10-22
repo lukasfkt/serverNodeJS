@@ -1,10 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const sequelize = require("sequelize");
 const database = require('./models');
-const { json } = require('express');
 const db = require('./models');
 const { Op } = require("sequelize");
+const { json } = require('body-parser');
 
 const app = express();
 
@@ -21,7 +20,7 @@ app.get("/test", function (req, res) {
 })
 
 app.get("/resetAllData", function (req, res) {
-  db.meditions.destroy({
+  db.Meditions.destroy({
     where: {},
     truncate: true
   })
@@ -31,7 +30,7 @@ app.get("/resetAllData", function (req, res) {
 //========================================= GET MEDITIONS =========================================
 
 app.get('/all', async function (req, res) {
-  const result = await database.meditions.findAll()
+  const result = await database.Meditions.findAll()
   return res.status(200).send(result);
 })
 
@@ -46,7 +45,7 @@ app.get('/getLastMonthMed', async function (req, res) {
   var aux = [[]];
   aux['temp'] = [], aux['water'] = [], aux['gases'] = []
   var timeTemp = [], timeWater = [], timeGases = [];
-  const result = await database.meditions.findAll({
+  const result = await database.Meditions.findAll({
     where: {
       time: {
         [Op.gte]: data,
@@ -132,7 +131,7 @@ app.get('/getLastHourMed', async function (req, res) {
   var temp = [], water = [], gases = [];
   var timeTemp = [], timeWater = [], timeGases = [];
   data.setHours(data.getHours() - 4)
-  const result = await database.meditions.findAll({
+  const result = await database.Meditions.findAll({
     where: {
       time: {
         [Op.gte]: data,
@@ -181,84 +180,203 @@ app.post("/sendData", function (req, res) {
   if (type != "temp" && type != "water" && type != "gases") {
     return res.status(410).header("Registration error").send("Invalid data");
   }
-  database.meditions.create({
+  database.Meditions.create({
     'type': req.body.type,
     'medData': req.body.medData,
     'time': date,
     'userId': req.body.userId,
   }).then(function (result) {
-    return res.send("Dado inserido com sucesso");
+    return res.status(201).send("Data registered successfully");
   }).catch(function (err) {
-    return res.send("Erro no cadastro do dado" + err);
+    return res.status(401).send("Failed to register data" + err);
   })
 })
 
+//========================================= MEASURE CONFIGS =======================================
 
-//========================================= CONFIG =========================================
-
-app.get("/getUserConfig", async function (req, res) {
-  if (!req.query.userId) {
+app.get('/measure', async function (req, res) {
+  var userId = req.body.userId ? req.body.userId : req.query.userId
+  if (!userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
-  const result = await database.UserConfig.findAll({
+
+  const result = await database.MeasureConfigs.findOne({
     where: {
       userId: {
         [Op.eq]: req.query.userId,
       },
     }
   })
-  if (result.length == 0) {
-    return res.status(406).header("User not found").send("User not found");
-  }
-  return res.status(200).send(result[0]);
-})
 
-app.post("/createDefaultConfig", function (req, res) {
-  if (!req.body.gases || !req.body.water || !req.body.temp || !req.body.userId) {
+  const valueToReturn = {
+    "timeToMeasure": result.timeToMeasure,
+    "supervisor_configs": {
+      "time_to_supervisor": result.timeToSup,
+      "supervisor_gas_thresholds": {
+        "activate_threshold": result.supGasActivateThreshold,
+        "deactivate_threshold": result.supGasDeactivateThreshold
+      },
+      "supervisor_temp_thresholds": {
+        "activate_threshold": result.supTempActivateThreshold,
+        "deactivate_threshold": result.supTempDeactivateThreshold
+      },
+      "supervisor_water_thresholds": {
+        "activate_threshold": result.supWaterActivateThreshold,
+        "deactivate_threshold": result.supWaterDeactivateThreshold
+      }
+    }
+  }
+  return res.json(valueToReturn).status(200);
+});
+
+app.post('/measure', async function (req, res) {
+  const { userId, time_to_measure, supervisor_configs, } = req.body;
+  const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_water_thresholds } = supervisor_configs;
+
+  if (!userId, !time_to_measure || !supervisor_configs || !time_to_supervisor || !supervisor_gas_thresholds || !supervisor_temp_thresholds) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
-  const add = database.UserConfig.create({
-    'gases': req.body.gases,
-    'water': req.body.water,
-    'temp': req.body.temp,
-    'active': false,
-    'userId': req.body.userId
-  }).then(function (result) {
-    return res.status(200).send("Data registered successfully");
-  }).catch(function (err) {
-    return res.status(410).header("Registration error").send("Invalid data");
-  })
-})
 
-app.put("/updateUserConfig", async function (req, res) {
-  var active = req.body.active ? req.body.active : req.query.active;
-  var userId = req.body.userId ? req.body.userId : req.query.userId;
-  if (!active || !userId) {
-    return res.status(400).header("Payload incomplete").send("Payload incomplete");
-  }
-  const result = await database.UserConfig.findAll({
+  const result = await database.MeasureConfigs.findOne({
     where: {
       userId: {
         [Op.eq]: userId,
       },
     }
   })
+
   if (result.length == 0) {
-    return res.status(406).header("User not found").send("User not found");
+    database.MeasureConfigs.create({
+      'timeToMeasure': time_to_measure,
+      'timeToSup': time_to_supervisor,
+      'supGasActivateThreshold': supervisor_gas_thresholds.activate_threshold,
+      'supGasDeactivateThreshold': supervisor_gas_thresholds.deactivate_threshold,
+      'supTempActivateThreshold': supervisor_temp_thresholds.activate_threshold,
+      'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
+      'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
+      'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
+      'userId': userId,
+    }).then(function (result) {
+      return res.status(201).send("Data registered successfully");
+    }).catch(function (err) {
+      return res.status(401).send("Failed to register data" + err);
+    })
+  } else {
+    database.MeasureConfigs.update({
+      'timeToMeasure': time_to_measure,
+      'timeToSup': time_to_supervisor,
+      'supGasActivateThreshold': supervisor_gas_thresholds.activate_threshold,
+      'supGasDeactivateThreshold': supervisor_gas_thresholds.deactivate_threshold,
+      'supTempActivateThreshold': supervisor_temp_thresholds.activate_threshold,
+      'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
+      'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
+      'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
+    },
+      {
+        where: { userId: userId },
+      }
+    ).then(function (result) {
+      return res.status(201).send("Data alterado com sucesso");
+    }).catch(function (err) {
+      return res.status(401).send("Failed to register data" + err);
+    })
   }
-  const add = database.UserConfig.update({
-    'active': active,
-    'userId': userId
-  },
-    {
-      where: { userId: userId },
+});
+
+//========================================= ALERT CONFIGS =========================================
+app.get('/alert', async function (req, res) {
+  var userId = req.body.userId ? req.body.userId : req.query.userId
+  if (!userId) {
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
+  }
+
+  const result = await database.AlertConfigs.findOne({
+    where: {
+      userId: {
+        [Op.eq]: req.query.userId,
+      },
     }
-  ).then(function (result) {
-    return res.status(200).send("Data registered successfully");
-  }).catch(function (err) {
-    return res.status(410).header("Registration error").send("Invalid data");
   })
-})
+
+  const valueToReturn = {
+    "alert_gas_enable": result.alertGasEnable,
+    "alert_temp_enable": result.alertTempEnable,
+    "alert_water_enable": result.alertWaterEnable,
+    "set_alert_configs": {
+      "alert_gas_thresholds": {
+        "activate_threshold": result.gasActivateThreshold,
+        "deactivate_threshold": result.gasDeactivateThreshold
+      },
+      "alert_temp_thresholds": {
+        "activate_threshold": result.tempActivateThreshold,
+        "deactivate_threshold": result.tempDeactivateThreshold
+      },
+      "alert_water_thresholds": {
+        "activate_threshold": result.waterActivateThreshold,
+        "deactivate_threshold": result.waterDeactivateThreshold
+      }
+    }
+  }
+  return res.json(valueToReturn).status(200);
+
+});
+
+app.post('/alert', async function (req, res) {
+  const { userId, alert_gas_enable, alert_temp_enable, alert_water_enable, set_alert_configs } = req.body;
+  const { alert_gas_thresholds, alert_temp_thresholds, alert_water_thresholds } = set_alert_configs;
+
+  if (!userId || !alert_gas_enable || !alert_temp_enable || !alert_water_enable || !set_alert_configs || !alert_gas_thresholds || !alert_temp_thresholds || !alert_water_thresholds) {
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
+  }
+
+  const result = await database.AlertConfigs.findOne({
+    where: {
+      userId: {
+        [Op.eq]: userId,
+      },
+    }
+  })
+
+  if (result.length == 0) {
+    database.AlertConfigs.create({
+      'alertGasEnable': alert_gas_enable,
+      'alertWaterEnable': alert_water_enable,
+      'alertTempEnable': alert_temp_enable,
+      'gasActivateThreshold': alert_gas_thresholds.activate_threshold,
+      'gasDeactivateThreshold': alert_gas_thresholds.deactivate_threshold,
+      'tempActivateThreshold': alert_temp_thresholds.activate_threshold,
+      'tempDeactivateThreshold': alert_temp_thresholds.deactivate_threshold,
+      'waterActivateThreshold': alert_water_thresholds.activate_threshold,
+      'waterDeactivateThreshold': alert_water_thresholds.deactivate_threshold,
+      'userId': userId
+    }).then(function (result) {
+      return res.status(201).send("Data registered successfully");
+    }).catch(function (err) {
+      return res.status(401).send("Failed to register data" + err);
+    });
+  } else {
+    database.AlertConfigs.update({
+      'alertGasEnable': alert_gas_enable,
+      'alertWaterEnable': alert_water_enable,
+      'alertTempEnable': alert_temp_enable,
+      'gasActivateThreshold': alert_gas_thresholds.activate_threshold,
+      'gasDeactivateThreshold': alert_gas_thresholds.deactivate_threshold,
+      'tempActivateThreshold': alert_temp_thresholds.activate_threshold,
+      'tempDeactivateThreshold': alert_temp_thresholds.deactivate_threshold,
+      'waterActivateThreshold': alert_water_thresholds.activate_threshold,
+      'waterDeactivateThreshold': alert_water_thresholds.deactivate_threshold,
+    },
+      {
+        where: { userId: userId },
+      }
+    ).then(function (result) {
+      return res.status(201).send("Data registered successfully");
+    }).catch(function (err) {
+      return res.status(401).send("Failed to register data" + err);
+    })
+  }
+});
+
 
 app.listen(port, () => console.log(`servidor rodando na porta ${port}`));
 

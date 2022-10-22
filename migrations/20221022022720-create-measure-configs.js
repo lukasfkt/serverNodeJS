@@ -1,27 +1,39 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('UserConfigs', {
+    await queryInterface.createTable('MeasureConfigs', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      gases: {
+      timeToMeasure: {
+        type: Sequelize.INTEGER
+      },
+      timeToSup: {
+        type: Sequelize.INTEGER
+      },
+      supGasActivateThreshold: {
         type: Sequelize.FLOAT
       },
-      water: {
+      supGasDeactivateThreshold: {
         type: Sequelize.FLOAT
       },
-      temp: {
+      supTempActivateThreshold: {
+        type: Sequelize.FLOAT
+      },
+      supTempDeactivateThreshold: {
+        type: Sequelize.FLOAT
+      },
+      supWaterActivateThreshold: {
+        type: Sequelize.FLOAT
+      },
+      supWaterDeactivateThreshold: {
         type: Sequelize.FLOAT
       },
       userId: {
         type: Sequelize.INTEGER
-      },
-      active: {
-        type: Sequelize.BOOLEAN
       },
       createdAt: {
         allowNull: false,
@@ -34,6 +46,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('UserConfigs');
+    await queryInterface.dropTable('MeasureConfigs');
   }
 };
