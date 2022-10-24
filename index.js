@@ -194,7 +194,7 @@ app.post("/sendData", function (req, res) {
 
 //========================================= MEASURE CONFIGS =======================================
 
-app.get('/measure', async function (req, res) {
+app.get('/measurement_configs', async function (req, res) {
   var userId = req.body.userId ? req.body.userId : req.query.userId
   if (!userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
@@ -229,7 +229,7 @@ app.get('/measure', async function (req, res) {
   return res.json(valueToReturn).status(200);
 });
 
-app.post('/measure', async function (req, res) {
+app.post('/measurement_configs', async function (req, res) {
   const { userId, time_to_measure, supervisor_configs, } = req.body;
   const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_water_thresholds } = supervisor_configs;
 
@@ -284,7 +284,7 @@ app.post('/measure', async function (req, res) {
 });
 
 //========================================= ALERT CONFIGS =========================================
-app.get('/alert', async function (req, res) {
+app.get('/alert_configs', async function (req, res) {
   var userId = req.body.userId ? req.body.userId : req.query.userId
   if (!userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
@@ -321,7 +321,7 @@ app.get('/alert', async function (req, res) {
 
 });
 
-app.post('/alert', async function (req, res) {
+app.post('/alert_configs', async function (req, res) {
   const { userId, alert_gas_enable, alert_temp_enable, alert_water_enable, set_alert_configs } = req.body;
   const { alert_gas_thresholds, alert_temp_thresholds, alert_water_thresholds } = set_alert_configs;
 
