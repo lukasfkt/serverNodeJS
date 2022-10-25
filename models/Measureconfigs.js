@@ -22,7 +22,9 @@ module.exports = (sequelize, DataTypes) => {
     supTempDeactivateThreshold: DataTypes.FLOAT,
     supWaterActivateThreshold: DataTypes.FLOAT,
     supWaterDeactivateThreshold: DataTypes.FLOAT,
-    userId: DataTypes.INTEGER
+    userId: DataTypes.INTEGER,
+    supEnable: DataTypes.BOOLEAN,
+    percentage: DataTypes.FLOAT,
   }, {
     sequelize,
     modelName: 'MeasureConfigs',

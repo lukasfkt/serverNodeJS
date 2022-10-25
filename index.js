@@ -230,13 +230,14 @@ app.get('/measurement_configs', async function (req, res) {
 });
 
 app.post('/measurement_configs', async function (req, res) {
-  const { userId, time_to_measure, supervisor_configs, } = req.body;
+  const { userId, time_to_measure, supervisor_configs, s_enable } = req.body;
   const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_water_thresholds } = supervisor_configs;
 
   if (!userId, !time_to_measure || !supervisor_configs || !time_to_supervisor || !supervisor_gas_thresholds || !supervisor_temp_thresholds) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
 
+  const supEnable = s_enable ? s_enable : true;
   const result = await database.MeasureConfigs.findOne({
     where: {
       userId: {
@@ -255,6 +256,7 @@ app.post('/measurement_configs', async function (req, res) {
       'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
       'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
       'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
+      'supEnable': supEnable,
       'userId': userId,
     }).then(function (result) {
       return res.status(201).send("Data registered successfully");
@@ -271,6 +273,7 @@ app.post('/measurement_configs', async function (req, res) {
       'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
       'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
       'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
+      'supEnable': supEnable,
     },
       {
         where: { userId: userId },
@@ -377,6 +380,47 @@ app.post('/alert_configs', async function (req, res) {
   }
 });
 
+app.put('/updateUserConfig', async function (req, res) {
+  const { userId, alert_gas_enable, alert_temp_enable, alert_water_enable, time_to_measure, s_enable, percent_s_t, gas_t_a, gas_t_d, temp_t_a, temp_t_d, water_t_a, water_t_d } = req.body;
+
+  if (!userId || !alert_gas_enable || !alert_temp_enable || !alert_water_enable || !time_to_measure || !s_enable || !percent_s_t || !gas_t_a || !gas_t_d || !temp_t_a || !temp_t_d || !water_t_a || !water_t_d) {
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
+  }
+
+  await database.AlertConfigs.update({
+    'alertGasEnable': alert_gas_enable,
+    'alertWaterEnable': alert_water_enable,
+    'alertTempEnable': alert_temp_enable,
+    'gasActivateThreshold': gas_t_a,
+    'gasDeactivateThreshold': gas_t_d,
+    'tempActivateThreshold': temp_t_a,
+    'tempDeactivateThreshold': temp_t_d,
+    'waterActivateThreshold': water_t_a,
+    'waterDeactivateThreshold': water_t_d,
+  },
+    {
+      where: { userId: userId },
+    }
+  )
+
+  await database.MeasureConfigs.update({
+    'timeToMeasure': time_to_measure,
+    'timeToSup': time_to_measure * 60 / 30,
+    'supGasActivateThreshold': gas_t_a * percent_s_t,
+    'supGasDeactivateThreshold': gas_t_d * percent_s_t,
+    'supTempActivateThreshold': temp_t_a * percent_s_t,
+    'supTempDeactivateThreshold': temp_t_d * percent_s_t,
+    'supWaterActivateThreshold': water_t_a * percent_s_t,
+    'supWaterDeactivateThreshold': water_t_d * percent_s_t,
+    'supEnable': s_enable,
+    'percentage': percent_s_t
+  },
+    {
+      where: { userId: userId },
+    }
+  )
+  return res.status(201).send();
+})
 
 app.listen(port, () => console.log(`servidor rodando na porta ${port}`));
 
