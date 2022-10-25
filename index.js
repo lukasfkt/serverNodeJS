@@ -223,21 +223,25 @@ app.get('/measurement_configs', async function (req, res) {
       "supervisor_water_thresholds": {
         "activate_threshold": result.supWaterActivateThreshold,
         "deactivate_threshold": result.supWaterDeactivateThreshold
-      }
+      },
+      'supervisor_enable': result.supEnable,
+      'supervisor_percentage': result.percentage
     }
   }
   return res.json(valueToReturn).status(200);
 });
 
 app.post('/measurement_configs', async function (req, res) {
-  const { userId, time_to_measure, supervisor_configs, s_enable } = req.body;
-  const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_water_thresholds } = supervisor_configs;
+  const { userId, time_to_measure, supervisor_configs } = req.body;
+  const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_water_thresholds, supervisor_enable, supervisor_percentage } = supervisor_configs;
 
   if (!userId, !time_to_measure || !supervisor_configs || !time_to_supervisor || !supervisor_gas_thresholds || !supervisor_temp_thresholds) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
 
-  const supEnable = s_enable ? s_enable : true;
+  const sup_percentage = supervisor_percentage ? supervisor_percentage : 0.9;
+  const sup_enable = supervisor_enable ? supervisor_enable : true;
+
   const result = await database.MeasureConfigs.findOne({
     where: {
       userId: {
@@ -256,7 +260,8 @@ app.post('/measurement_configs', async function (req, res) {
       'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
       'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
       'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
-      'supEnable': supEnable,
+      'supEnable': sup_enable,
+      'percentage': sup_percentage,
       'userId': userId,
     }).then(function (result) {
       return res.status(201).send("Data registered successfully");
@@ -273,7 +278,8 @@ app.post('/measurement_configs', async function (req, res) {
       'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
       'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
       'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
-      'supEnable': supEnable,
+      'supEnable': sup_enable,
+      'percentage': sup_percentage,
     },
       {
         where: { userId: userId },
