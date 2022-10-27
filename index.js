@@ -231,7 +231,7 @@ app.post('/measurement_configs', async function (req, res) {
   const { userId, time_to_measure, supervisor_configs } = req.body;
   const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_enable, supervisor_percentage } = supervisor_configs;
 
-  if (!userId, !time_to_measure || !supervisor_configs || !time_to_supervisor || !supervisor_gas_thresholds || !supervisor_temp_thresholds) {
+  if (!userId || !time_to_measure || !supervisor_configs || !time_to_supervisor || !supervisor_gas_thresholds || !supervisor_temp_thresholds) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
 
@@ -326,7 +326,7 @@ app.post('/alert_configs', async function (req, res) {
   const { userId, alert_gas_enable, alert_temp_enable, alert_water_enable, set_alert_configs } = req.body;
   const { alert_gas_thresholds, alert_temp_thresholds, alert_water_thresholds } = set_alert_configs;
 
-  if (!userId || alert_gas_enable == "" || alert_temp_enable == "" || alert_water_enable == "" || !set_alert_configs || !alert_gas_thresholds || !alert_temp_thresholds || !alert_water_thresholds) {
+  if (!userId || !set_alert_configs || !alert_gas_thresholds || !alert_temp_thresholds || !alert_water_thresholds) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
 
@@ -381,7 +381,7 @@ app.post('/alert_configs', async function (req, res) {
 app.put('/updateUserConfig', async function (req, res) {
   const { userId, alert_gas_enable, alert_temp_enable, alert_water_enable, time_to_measure, s_enable, percent_s_t, gas_t_a, gas_t_d, temp_t_a, temp_t_d, water_t_a, water_t_d } = req.body;
 
-  if (!userId || alert_gas_enable == "" || alert_temp_enable == "" || alert_water_enable == "" || !time_to_measure || !s_enable || !percent_s_t || !gas_t_a || !gas_t_d || !temp_t_a || !temp_t_d || !water_t_a || !water_t_d) {
+  if (!userId || !time_to_measure || !percent_s_t || !gas_t_a || !gas_t_d || !temp_t_a || !temp_t_d || !water_t_a || !water_t_d) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
 
