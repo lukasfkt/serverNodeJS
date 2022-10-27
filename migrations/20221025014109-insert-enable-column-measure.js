@@ -21,6 +21,9 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    return await queryInterface.removeColumn('MeasureConfigs', 'supEnable', 'percentage');
+    return Promise.all([
+      queryInterface.removeColumn('MeasureConfigs', 'supEnable'),
+      queryInterface.removeColumn('MeasureConfigs', 'percentage')
+    ]);
   }
 };

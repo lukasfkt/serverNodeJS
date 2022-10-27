@@ -20,8 +20,6 @@ module.exports = (sequelize, DataTypes) => {
     supGasDeactivateThreshold: DataTypes.FLOAT,
     supTempActivateThreshold: DataTypes.FLOAT,
     supTempDeactivateThreshold: DataTypes.FLOAT,
-    supWaterActivateThreshold: DataTypes.FLOAT,
-    supWaterDeactivateThreshold: DataTypes.FLOAT,
     userId: DataTypes.INTEGER,
     supEnable: DataTypes.BOOLEAN,
     percentage: DataTypes.FLOAT,

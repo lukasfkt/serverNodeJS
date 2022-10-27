@@ -220,10 +220,6 @@ app.get('/measurement_configs', async function (req, res) {
         "activate_threshold": result.supTempActivateThreshold,
         "deactivate_threshold": result.supTempDeactivateThreshold
       },
-      "supervisor_water_thresholds": {
-        "activate_threshold": result.supWaterActivateThreshold,
-        "deactivate_threshold": result.supWaterDeactivateThreshold
-      },
       'supervisor_enable': result.supEnable,
       'supervisor_percentage': result.percentage
     }
@@ -233,7 +229,7 @@ app.get('/measurement_configs', async function (req, res) {
 
 app.post('/measurement_configs', async function (req, res) {
   const { userId, time_to_measure, supervisor_configs } = req.body;
-  const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_water_thresholds, supervisor_enable, supervisor_percentage } = supervisor_configs;
+  const { time_to_supervisor, supervisor_gas_thresholds, supervisor_temp_thresholds, supervisor_enable, supervisor_percentage } = supervisor_configs;
 
   if (!userId, !time_to_measure || !supervisor_configs || !time_to_supervisor || !supervisor_gas_thresholds || !supervisor_temp_thresholds) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
@@ -258,8 +254,6 @@ app.post('/measurement_configs', async function (req, res) {
       'supGasDeactivateThreshold': supervisor_gas_thresholds.deactivate_threshold,
       'supTempActivateThreshold': supervisor_temp_thresholds.activate_threshold,
       'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
-      'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
-      'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
       'supEnable': sup_enable,
       'percentage': sup_percentage,
       'userId': userId,
@@ -276,8 +270,6 @@ app.post('/measurement_configs', async function (req, res) {
       'supGasDeactivateThreshold': supervisor_gas_thresholds.deactivate_threshold,
       'supTempActivateThreshold': supervisor_temp_thresholds.activate_threshold,
       'supTempDeactivateThreshold': supervisor_temp_thresholds.deactivate_threshold,
-      'supWaterActivateThreshold': supervisor_water_thresholds.activate_threshold,
-      'supWaterDeactivateThreshold': supervisor_water_thresholds.deactivate_threshold,
       'supEnable': sup_enable,
       'percentage': sup_percentage,
     },
@@ -416,8 +408,6 @@ app.put('/updateUserConfig', async function (req, res) {
     'supGasDeactivateThreshold': gas_t_d * percent_s_t,
     'supTempActivateThreshold': temp_t_a * percent_s_t,
     'supTempDeactivateThreshold': temp_t_d * percent_s_t,
-    'supWaterActivateThreshold': water_t_a * percent_s_t,
-    'supWaterDeactivateThreshold': water_t_d * percent_s_t,
     'supEnable': s_enable,
     'percentage': percent_s_t
   },
