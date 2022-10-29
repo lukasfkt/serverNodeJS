@@ -62,7 +62,7 @@ app.get('/getLastMonthMed', async function (req, res) {
     d = new Date(element.time)
     var datestring = ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2);
     switch (element.type) {
-      case "temp":
+      case "TEMP":
         if (timeTemp.includes(datestring)) {
           index = timeTemp.findIndex(dataToFind => dataToFind == datestring)
           temp[index] = temp[index] + element.medData
@@ -75,7 +75,7 @@ app.get('/getLastMonthMed', async function (req, res) {
           timeTemp.push(datestring)
         }
         break;
-      case "water":
+      case "WATER_FLOW":
         if (timeWater.includes(datestring)) {
           index = timeWater.findIndex(dataToFind => dataToFind == datestring)
           water[index] = water[index] + element.medData
@@ -88,7 +88,7 @@ app.get('/getLastMonthMed', async function (req, res) {
           timeWater.push(datestring)
         }
         break;
-      case "gases":
+      case "GAS":
         if (timeGases.includes(datestring)) {
           index = timeGases.findIndex(dataToFind => dataToFind == datestring)
           gases[index] = gases[index] + element.medData
@@ -148,15 +148,15 @@ app.get('/getLastHourMed', async function (req, res) {
     d = new Date(element.time)
     var datestring = (("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2));
     switch (element.type) {
-      case "temp":
+      case "TEMP":
         temp.push(element.medData);
         timeTemp.push(datestring)
         break;
-      case "water":
+      case "WATER_FLOW":
         water.push(element.medData);
         timeWater.push(datestring)
         break;
-      case "gases":
+      case "GAS":
         gases.push(element.medData);
         timeGases.push(datestring)
         break;
@@ -168,28 +168,30 @@ app.get('/getLastHourMed', async function (req, res) {
 //========================================= WRITE MEDITIONS =========================================
 
 app.post("/sendData", function (req, res) {
-  var userId = req.body.userId ? req.body.userId : req.query.userId
-  var type = req.body.type ? req.body.type : req.query.type
-  var medData = req.body.medData ? req.body.medData : req.query.medData
-  var timestamp = req.body.timestamp ? req.body.timestamp : req.query.timestamp
-  var date = new Date(timestamp * 1000);
-  date.setHours(date.getHours() - 3)
-  if (!userId || !type || !medData || !timestamp) {
-    return res.status(400).header("Payload incomplete").send("Payload incomplete");
-  }
-  if (type != "temp" && type != "water" && type != "gases") {
-    return res.status(410).header("Registration error").send("Invalid data");
-  }
-  database.Meditions.create({
-    'type': req.body.type,
-    'medData': req.body.medData,
-    'time': date,
-    'userId': req.body.userId,
-  }).then(function (result) {
-    return res.status(201).send("Data registered successfully");
-  }).catch(function (err) {
-    return res.status(401).send("Failed to register data" + err);
+  const { userId, measurementsGroup } = req.body;
+  const { timestamp, measurements } = measurementsGroup
+  console.log(timestamp);
+  measurements.forEach((measure) => {
+    const { type, value } = measure;
+    console.log(type, value)
+    var date = new Date(timestamp * 1000);
+    date.setHours(date.getHours() - 3)
+    if (!userId || !type || !value || !timestamp) {
+      return res.status(400).header("Payload incomplete").send("Payload incomplete");
+    }
+    if (type != "TEMP" && type != "WATER_FLOW" && type != "GAS") {
+      return res.status(410).header("Registration error").send("Invalid data");
+    }
+    database.Meditions.create({
+      'type': type,
+      'medData': value,
+      'time': date,
+      'userId': userId,
+    }).catch(function (err) {
+      return res.status(401).send("Failed to register data" + err);
+    })
   })
+  return res.status(201).send("Data registered successfully");
 })
 
 //========================================= MEASURE CONFIGS =======================================
