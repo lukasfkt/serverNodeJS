@@ -173,10 +173,9 @@ app.post("/sendData", function (req, res) {
   console.log(timestamp);
   measurements.forEach((measure) => {
     const { type, value } = measure;
-    console.log(type, value)
     var date = new Date(timestamp * 1000);
     date.setHours(date.getHours() - 3)
-    if (!userId || !type || !value || !timestamp) {
+    if (!userId || !type || !timestamp) {
       return res.status(400).header("Payload incomplete").send("Payload incomplete");
     }
     if (type != "TEMP" && type != "WATER_FLOW" && type != "GAS") {
