@@ -24,6 +24,18 @@ app.get("/resetAllData", function (req, res) {
     where: {},
     truncate: true
   })
+  db.Alerts.destroy({
+    where: {},
+    truncate: true
+  })
+  db.AlertConfigs.destroy({
+    where: {},
+    truncate: true
+  })
+  db.MeasureConfigs.destroy({
+    where: {},
+    truncate: true
+  })
   return res.status(200).send();
 })
 
@@ -339,7 +351,7 @@ app.post('/alert_configs', async function (req, res) {
     }
   })
 
-  if (result.length == 0) {
+  if (!result) {
     database.AlertConfigs.create({
       'alertGasEnable': alert_gas_enable,
       'alertWaterEnable': alert_water_enable,
@@ -418,6 +430,76 @@ app.put('/updateUserConfig', async function (req, res) {
   )
   return res.status(201).send();
 })
+
+//========================================= ALERTS =========================================
+
+app.post('/alerts', async function (req, res) {
+  const { userId, alerts } = req.body;
+  alerts.forEach(async (element, index) => {
+    const { type, active, init_timestamp, end_timestamp } = element;
+    const result = await database.Alerts.findOne({
+      where: {
+        userId: {
+          [Op.eq]: userId,
+        },
+        type: {
+          [Op.eq]: type,
+        },
+      }
+    })
+    if (!result) {
+      database.Alerts.create({
+        'userId': userId,
+        'type': type,
+        'active': active,
+        'init_timestamp': init_timestamp,
+        'end_timestamp': end_timestamp,
+      })
+    } else {
+      database.Alerts.update({
+        'active': active,
+        'init_timestamp': init_timestamp,
+        'end_timestamp': end_timestamp,
+      },
+        {
+          where: { userId: userId, type: type },
+        }
+      )
+    }
+  });
+  return res.status(201).send();
+});
+
+app.get('/alerts', async function (req, res) {
+  var userId = req.body.userId ? req.body.userId : req.query.userId;
+  var alerts = [];
+  if (!userId) {
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
+  }
+
+  const result = await database.Alerts.findAll({
+    where: {
+      userId: {
+        [Op.eq]: req.query.userId,
+      },
+    }
+  })
+  result.forEach((element, index) => {
+    const { type, active, init_timestamp, end_timestamp } = element;
+    const valueToInsert = {
+      type,
+      active,
+      init_timestamp,
+      end_timestamp
+    };
+    alerts.push(valueToInsert);
+  })
+  var valueToReturn = {
+    userId,
+    alerts
+  };
+  return res.json(valueToReturn).status(200);
+});
 
 app.listen(port, () => console.log(`servidor rodando na porta ${port}`));
 
