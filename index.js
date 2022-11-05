@@ -205,6 +205,77 @@ app.post("/sendData", function (req, res) {
   return res.status(201).send("Data registered successfully");
 })
 
+//========================================= CONFIGS =======================================
+
+app.get('/configs', async function (req, res) {
+  var userId = req.body.userId ? req.body.userId : req.query.userId
+  if (!userId) {
+    return res.status(400).header("Payload incomplete").send("Payload incomplete");
+  }
+
+  const resultMeasure = await database.MeasureConfigs.findOne({
+    where: {
+      userId: {
+        [Op.eq]: req.query.userId,
+      },
+    }
+  })
+
+  const resultAlert = await database.AlertConfigs.findOne({
+    where: {
+      userId: {
+        [Op.eq]: req.query.userId,
+      },
+    }
+  })
+
+  if (!resultMeasure || !resultAlert) {
+    return res.status(406).header("User not found").send("User not found");
+  }
+
+  const unixTimeStamp = Math.floor(Date.now() / 1000);
+
+  const valueToReturn = {
+    "timestamp": unixTimeStamp,
+    "measure_configs": {
+      "timeToMeasure": resultMeasure.timeToMeasure,
+      "supervisor_configs": {
+        "time_to_supervisor": resultMeasure.timeToSup,
+        "supervisor_gas_thresholds": {
+          "activate_threshold": resultMeasure.supGasActivateThreshold,
+          "deactivate_threshold": resultMeasure.supGasDeactivateThreshold
+        },
+        "supervisor_temp_thresholds": {
+          "activate_threshold": resultMeasure.supTempActivateThreshold,
+          "deactivate_threshold": resultMeasure.supTempDeactivateThreshold
+        },
+        'supervisor_enable': resultMeasure.supEnable,
+        'supervisor_percentage': resultMeasure.percentage
+      },
+    },
+    "alert_configs": {
+      "alert_gas_enable": resultAlert.alertGasEnable,
+      "alert_temp_enable": resultAlert.alertTempEnable,
+      "alert_water_enable": resultAlert.alertWaterEnable,
+      "set_alert_configs": {
+        "alert_gas_thresholds": {
+          "activate_threshold": resultAlert.gasActivateThreshold,
+          "deactivate_threshold": resultAlert.gasDeactivateThreshold
+        },
+        "alert_temp_thresholds": {
+          "activate_threshold": resultAlert.tempActivateThreshold,
+          "deactivate_threshold": resultAlert.tempDeactivateThreshold
+        },
+        "alert_water_thresholds": {
+          "activate_threshold": resultAlert.waterActivateThreshold,
+          "deactivate_threshold": resultAlert.waterDeactivateThreshold
+        }
+      }
+    }
+  }
+  return res.json(valueToReturn).status(200);
+});
+
 //========================================= MEASURE CONFIGS =======================================
 
 app.get('/measurement_configs', async function (req, res) {
@@ -220,6 +291,10 @@ app.get('/measurement_configs', async function (req, res) {
       },
     }
   })
+
+  if (!result) {
+    return res.status(406).header("User not found").send("User not found");
+  }
 
   const unixTimeStamp = Math.floor(Date.now() / 1000);
 
@@ -314,6 +389,10 @@ app.get('/alert_configs', async function (req, res) {
       },
     }
   })
+
+  if (!result) {
+    return res.status(406).header("User not found").send("User not found");
+  }
 
   const valueToReturn = {
     "alert_gas_enable": result.alertGasEnable,
