@@ -221,6 +221,8 @@ app.get('/measurement_configs', async function (req, res) {
     }
   })
 
+  const unixTimeStamp = Math.floor(Date.now() / 1000);
+
   const valueToReturn = {
     "timeToMeasure": result.timeToMeasure,
     "supervisor_configs": {
@@ -235,7 +237,8 @@ app.get('/measurement_configs', async function (req, res) {
       },
       'supervisor_enable': result.supEnable,
       'supervisor_percentage': result.percentage
-    }
+    },
+    "timestamp": unixTimeStamp
   }
   return res.json(valueToReturn).status(200);
 });
@@ -437,35 +440,13 @@ app.post('/alerts', async function (req, res) {
   const { userId, alerts } = req.body;
   alerts.forEach(async (element, index) => {
     const { type, active, init_timestamp, end_timestamp } = element;
-    const result = await database.Alerts.findOne({
-      where: {
-        userId: {
-          [Op.eq]: userId,
-        },
-        type: {
-          [Op.eq]: type,
-        },
-      }
+    database.Alerts.create({
+      'userId': userId,
+      'type': type,
+      'active': active,
+      'init_timestamp': init_timestamp,
+      'end_timestamp': end_timestamp,
     })
-    if (!result) {
-      database.Alerts.create({
-        'userId': userId,
-        'type': type,
-        'active': active,
-        'init_timestamp': init_timestamp,
-        'end_timestamp': end_timestamp,
-      })
-    } else {
-      database.Alerts.update({
-        'active': active,
-        'init_timestamp': init_timestamp,
-        'end_timestamp': end_timestamp,
-      },
-        {
-          where: { userId: userId, type: type },
-        }
-      )
-    }
   });
   return res.status(201).send();
 });
