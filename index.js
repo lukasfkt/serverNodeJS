@@ -238,7 +238,7 @@ app.get('/configs', async function (req, res) {
   const valueToReturn = {
     "timestamp": unixTimeStamp,
     "measure_configs": {
-      "timeToMeasure": resultMeasure.timeToMeasure,
+      "time_to_measure": resultMeasure.timeToMeasure,
       "supervisor_configs": {
         "time_to_supervisor": resultMeasure.timeToSup,
         "supervisor_gas_thresholds": {
@@ -299,7 +299,7 @@ app.get('/measurement_configs', async function (req, res) {
   const unixTimeStamp = Math.floor(Date.now() / 1000);
 
   const valueToReturn = {
-    "timeToMeasure": result.timeToMeasure,
+    "time_to_measure": result.timeToMeasure,
     "supervisor_configs": {
       "time_to_supervisor": result.timeToSup,
       "supervisor_gas_thresholds": {
