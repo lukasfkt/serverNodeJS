@@ -153,7 +153,7 @@ app.get('/getLastHourMed', async function (req, res) {
       },
     }
   })
-  if (result.length == 0) {
+  if (!result) {
     return res.status(406).header("User not found").send("User not found");
   }
   result.forEach(element => {
@@ -337,7 +337,7 @@ app.post('/measurement_configs', async function (req, res) {
     }
   })
 
-  if (result.length == 0) {
+  if (!result) {
     database.MeasureConfigs.create({
       'timeToMeasure': time_to_measure,
       'timeToSup': time_to_supervisor,
@@ -544,6 +544,11 @@ app.get('/alerts', async function (req, res) {
       },
     }
   })
+
+  if (!result) {
+    return res.status(406).header("User not found").send("User not found");
+  }
+
   result.forEach((element, index) => {
     const { type, active, init_timestamp, end_timestamp } = element;
     const valueToInsert = {
