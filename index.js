@@ -67,7 +67,7 @@ app.get('/getLastMonthMed', async function (req, res) {
       },
     }
   })
-  if (result.length == 0) {
+  if (!result) {
     return res.status(406).header("User not found").send("User not found");
   }
   result.forEach((element) => {
@@ -78,7 +78,7 @@ app.get('/getLastMonthMed', async function (req, res) {
         if (timeTemp.includes(datestring)) {
           index = timeTemp.findIndex(dataToFind => dataToFind == datestring)
           temp[index] = temp[index] + element.medData
-          if (!['temp'][index]) {
+          if (!aux['temp'][index]) {
             aux['temp'][index] = 1;
           }
           aux['temp'][index] += 1;
