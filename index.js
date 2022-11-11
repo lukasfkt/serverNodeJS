@@ -28,14 +28,6 @@ app.get("/resetAllData", function (req, res) {
     where: {},
     truncate: true
   })
-  db.AlertConfigs.destroy({
-    where: {},
-    truncate: true
-  })
-  db.MeasureConfigs.destroy({
-    where: {},
-    truncate: true
-  })
   return res.status(200).send();
 })
 
@@ -180,6 +172,12 @@ app.get('/getLastHourMed', async function (req, res) {
 //========================================= WRITE MEDITIONS =========================================
 
 app.post("/sendData", function (req, res) {
+  console.log("REQ BODY");
+  console.log(req.body);
+  console.log("REQ QUERY");
+  console.log(req.query);
+  console.log("REQ HEADER");
+  console.log(req.header);
   const { userId, measurementsGroup } = req.body;
   const { timestamp, measurements } = measurementsGroup
   console.log(timestamp);
