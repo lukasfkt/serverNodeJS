@@ -34,7 +34,7 @@ app.get("/resetAllData", function (req, res) {
 //========================================= GET MEDITIONS =========================================
 
 app.get('/all', async function (req, res) {
-  const result = await database.Meditions.findAll()
+  const { result } = await database.Meditions.findAll()
   return res.status(200).send(result);
 })
 
@@ -172,12 +172,6 @@ app.get('/getLastHourMed', async function (req, res) {
 //========================================= WRITE MEDITIONS =========================================
 
 app.post("/sendData", function (req, res) {
-  console.log("REQ BODY");
-  console.log(req.body);
-  console.log("REQ QUERY");
-  console.log(req.query);
-  console.log("REQ HEADER");
-  console.log(req.header);
   const { userId, measurementsGroup } = req.body;
   const { timestamp, measurements } = measurementsGroup
   console.log(timestamp);
@@ -517,13 +511,35 @@ app.post('/alerts', async function (req, res) {
   const { userId, alerts } = req.body;
   alerts.forEach(async (element, index) => {
     const { type, active, init_timestamp, end_timestamp } = element;
-    database.Alerts.create({
-      'userId': userId,
-      'type': type,
-      'active': active,
-      'init_timestamp': init_timestamp,
-      'end_timestamp': end_timestamp,
+
+    const result = await database.Alerts.findOne({
+      where: {
+        type: {
+          [Op.eq]: type,
+        },
+      }
     })
+
+    if (!result) {
+      database.Alerts.create({
+        'userId': userId,
+        'type': type,
+        'active': active,
+        'init_timestamp': init_timestamp,
+        'end_timestamp': end_timestamp,
+      })
+    } else {
+      database.Alerts.update({
+        'type': type,
+        'active': active,
+        'init_timestamp': init_timestamp,
+        'end_timestamp': end_timestamp,
+      },
+        {
+          where: { userId: userId, type: type },
+        }
+      );
+    }
   });
   return res.status(201).send();
 });
@@ -542,10 +558,6 @@ app.get('/alerts', async function (req, res) {
       },
     }
   })
-
-  if (!result) {
-    return res.status(406).header("User not found").send("User not found");
-  }
 
   result.forEach((element, index) => {
     const { type, active, init_timestamp, end_timestamp } = element;
