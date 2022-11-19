@@ -79,7 +79,7 @@ app.get('/getLastMonthMed', async function (req, res) {
           timeTemp.push(datestring)
         }
         break;
-      case "WATER_FLOW":
+      case "WATER_VOLUME":
         if (timeWater.includes(datestring)) {
           index = timeWater.findIndex(dataToFind => dataToFind == datestring)
           water[index] = water[index] + element.medData
@@ -156,7 +156,7 @@ app.get('/getLastHourMed', async function (req, res) {
         temp.push(element.medData);
         timeTemp.push(datestring)
         break;
-      case "WATER_FLOW":
+      case "WATER_VOLUME":
         water.push(element.medData);
         timeWater.push(datestring)
         break;
@@ -182,7 +182,7 @@ app.post("/sendData", function (req, res) {
     if (!userId || !type || !timestamp) {
       return res.status(400).header("Payload incomplete").send("Payload incomplete");
     }
-    if (type != "TEMP" && type != "WATER_FLOW" && type != "GAS") {
+    if (type != "TEMP" && type != "WATER_VOLUME" && type != "GAS") {
       return res.status(410).header("Registration error").send("Invalid data");
     }
     database.Meditions.create({
