@@ -59,7 +59,7 @@ app.get('/getLastMonthMed', async function (req, res) {
       },
     }
   })
-  if (!result) {
+  if (result.length == 0) {
     return res.status(406).header("User not found").json({ temp: [0], timeTemp: [0], water: [0], timeWater: [0], gases: [0], timeGases: [0] });
   }
   result.forEach((element) => {
@@ -145,7 +145,7 @@ app.get('/getLastHourMed', async function (req, res) {
       },
     }
   })
-  if (!result) {
+  if (result.length == 0) {
     return res.status(406).header("User not found").json({ temp: [0], timeTemp: [0], water: [0], timeWater: [0], gases: [0], timeGases: [0] });
   }
   result.forEach(element => {
