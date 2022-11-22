@@ -60,7 +60,7 @@ app.get('/getLastMonthMed', async function (req, res) {
     }
   })
   if (!result) {
-    return res.status(406).header("User not found").send("User not found");
+    return res.status(406).header("User not found").json({ temp: temp, timeTemp: timeTemp, water: water, timeWater: timeWater, gases: gases, timeGases: timeGases });
   }
   result.forEach((element) => {
     d = new Date(element.time)
@@ -146,7 +146,7 @@ app.get('/getLastHourMed', async function (req, res) {
     }
   })
   if (!result) {
-    return res.status(406).header("User not found").send("User not found");
+    return res.status(406).header("User not found").json({ temp: temp, timeTemp: timeTemp, water: water, timeWater: timeWater, gases: gases, timeGases: timeGases });
   }
   result.forEach(element => {
     d = new Date(element.time)
