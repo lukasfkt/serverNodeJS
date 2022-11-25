@@ -24,10 +24,6 @@ app.get("/resetAllData", function (req, res) {
     where: {},
     truncate: true
   })
-  db.Alerts.destroy({
-    where: {},
-    truncate: true
-  })
   return res.status(200).send();
 })
 
@@ -42,9 +38,13 @@ app.get('/getLastMonthMed', async function (req, res) {
   if (!req.query.userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
-  var data = new Date();
-  data.setDate(0);
-  data.setHours(data.getHours() - 3)
+  var dataMin = new Date();
+  var dataMax = new Date();
+  dataMax.setMonth(dataMax.getMonth() + 1);
+  dataMax.setHours(dataMax.getHours() - 3);
+  dataMax.setDate(0);
+  dataMin.setDate(0);
+  dataMin.setHours(dataMin.getHours() - 3)
   var temp = [], water = [], gases = [];
   var aux = [[]];
   aux['temp'] = [], aux['water'] = [], aux['gases'] = []
@@ -52,7 +52,7 @@ app.get('/getLastMonthMed', async function (req, res) {
   const result = await database.Meditions.findAll({
     where: {
       time: {
-        [Op.gte]: data,
+        [Op.between]: [dataMin, dataMax]
       },
       userId: {
         [Op.eq]: req.query.userId,
@@ -131,14 +131,16 @@ app.get('/getLastHourMed', async function (req, res) {
   if (!req.query.userId) {
     return res.status(400).header("Payload incomplete").send("Payload incomplete");
   }
-  var data = new Date();
+  var dataMax = new Date();
+  var dataMin = new Date();
   var temp = [], water = [], gases = [];
   var timeTemp = [], timeWater = [], timeGases = [];
-  data.setHours(data.getHours() - 4)
+  dataMax.setHours(dataMax.getHours() - 3)
+  dataMin.setHours(dataMin.getHours() - 4)
   const result = await database.Meditions.findAll({
     where: {
       time: {
-        [Op.gte]: data,
+        [Op.between]: [dataMin, dataMax]
       },
       userId: {
         [Op.eq]: req.query.userId,
@@ -575,6 +577,17 @@ app.get('/alerts', async function (req, res) {
   };
   return res.json(valueToReturn).status(200);
 });
+
+app.get("/blabla", (req, res) => {
+  db.Alerts.destroy({
+    where: {
+      type: {
+        [Op.eq]: "WATER_FLOW_ALERT",
+      },
+    },
+    truncate: true
+  })
+})
 
 app.listen(port, () => console.log(`servidor rodando na porta ${port}`));
 
