@@ -4,12 +4,28 @@ const database = require('./models');
 const db = require('./models');
 const { Op } = require("sequelize");
 const { json } = require('body-parser');
+var nodemailer = require('nodemailer');
 
 const app = express();
 
 app.use(bodyParser.json());
 
 const port = 8080;
+
+var transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'noreply.appsmarthouse@gmail.com',
+    pass: 'ildpcwzxuvxwzxwj'
+  }
+});
+
+var mailOptions = {
+  from: 'noreply.appsmarthouse@gmail.com',
+  to: 'gabrielganzert@alunos.utfpr.edu.br, lucastanaka@alunos.utfpr.edu.br',
+  subject: 'Novo alerta',
+  text: 'Novo alerta disparado, porfavor verifique o seu aplicativo'
+};
 
 //========================================= TESTS =========================================
 
@@ -541,6 +557,13 @@ app.post('/alerts', async function (req, res) {
           where: { userId: userId, type: type },
         }
       );
+    }
+  });
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email sent: ' + info.response);
     }
   });
   return res.status(201).send();
